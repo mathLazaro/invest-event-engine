@@ -1,0 +1,55 @@
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Arquivos compilados
+*.so
+
+# Distribuição/empacotamento
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs
+*.log
+
+# Cobertura de testes
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Ferramentas de análise
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.tox/
+.nox/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# Banco de dados local
+*.db
+*.sqlite
+*.sqlite3
+
+# Arquivos temporários
+tmp/
+temp/
+*.tmp
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
