@@ -1,0 +1,11 @@
+services:
+  nats:
+    image: nats:latest
+    container_name: nats
+    ports:
+      - "4222:4222"  # clientes
+      - "8222:8222"  # monitoramento
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf
+      - ./nats-data:/data
+    command: ["-c", "/etc/nats/nats.conf"]
