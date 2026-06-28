@@ -1,0 +1,16 @@
+# IntelliJ/PyCharm
+.idea/
+
+# Arquivos de ambiente
+.env
+.env.*
+!.env.example
+
+
+# Dados do NATS JetStream
+nats-data/
+
+# Docker
+docker-data/
+
+
