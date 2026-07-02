@@ -67,7 +67,7 @@ async def create_stream(js: JetStreamContext):
         await js.add_stream(name="subscription", subjects=["subscription"])
 
 
-async def main():
+async def fetch():
     NATS_URL = os.getenv("NATS_URL", "nats://localhost:4222")
     nc = await nats.connect(NATS_URL)
     js = nc.jetstream()
@@ -80,4 +80,4 @@ async def main():
     await ws.listen(lambda info: asyncio.ensure_future(handle_message(info, js)))
 
 
-asyncio.run(main())
+asyncio.run(fetch())
