@@ -1,0 +1,5 @@
+{
+  "stream_name": "market-events",
+  "subject": "market.events",
+  "ack_behavior": "AckAll"
+}

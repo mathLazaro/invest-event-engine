@@ -1,3 +1,4 @@
+from decimal import ROUND_HALF_UP, Decimal
 import os
 import asyncio
 import json
@@ -15,17 +16,27 @@ def map_to_event(invest: dict) -> dict:
         invest (dict): Dicionário com os dados do recurso de investimento
 
     Returns:
-        dict: { ticker: str, price: float, sector: str, event: 'INVEST' | 'CONFIG'}
+        dict: { ticker: str, price: float, sector: str, event_type: 'INVEST' | 'CONFIG', timestamp: int}
     """
 
-    ticker = invest.get("id")
-    price = invest.get("price")
-    sector = TICKER_SECTOR_MAP.get(ticker, "DESCONHECIDO")
-
-    if price is None or ticker is None:
+    if invest.get("price") is None or invest.get("id") is None:
         raise RuntimeError("Invalid arguments")
 
-    return {"ticker": ticker, "price": price, "sector": sector, "event": "INVEST"}
+    ticker = invest.get("id").replace("-", "_").replace(".", "_")
+    price = str(
+        Decimal(invest.get("price")).quantize(
+            Decimal("0.00000001"), rounding=ROUND_HALF_UP
+        )
+    )
+    sector = TICKER_SECTOR_MAP.get(ticker, "UNKNOWN")
+    timestamp = invest.get("time")
+
+    return {
+        "ticker": ticker,
+        "price": price,
+        "sector": sector,
+        "timestamp": timestamp,
+    }
 
 
 async def handle_message(invest_info: dict, js: JetStreamContext):
@@ -38,7 +49,7 @@ async def handle_message(invest_info: dict, js: JetStreamContext):
     """
     try:
         payload = json.dumps(map_to_event(invest_info))
-        print(f"Envio: {payload}")
+        print(f"market.events: {payload}")
         await js.publish("market.events", payload.encode())
     except RuntimeError:
         print("Ticker com valores inválidos")
@@ -49,6 +60,11 @@ async def create_stream(js: JetStreamContext):
         await js.find_stream_name_by_subject("market.events")
     except nats.js.errors.NotFoundError:
         await js.add_stream(name="market-events", subjects=["market.events"])
+        
+    try:
+        await js.find_stream_name_by_subject("subscription")
+    except nats.js.errors.NotFoundError:
+        await js.add_stream(name="subscription", subjects=["subscription"])
 
 
 async def main():
