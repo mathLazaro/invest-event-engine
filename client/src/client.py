@@ -4,8 +4,6 @@ import json
 import nats
 import os
 
-from nats.js.client import JetStreamContext
-
 from model import SECTORS, TICKERS
 
 
@@ -63,6 +61,56 @@ async def listen_notifications(nc, user_id: str):
     await nc.subscribe(subject, cb=handler)
 
 
+async def notification_mode(nc, js, user_id: str, subscription: dict):
+    await js.publish("subscription", json.dumps(subscription).encode())
+    print(
+        "\nSubscrição publicada. Ouvindo notificações... (pressione 'q' para voltar ao menu)\n"
+    )
+
+    loop = asyncio.get_event_loop()
+
+    def wait_for_quit():
+        while True:
+            key = input()
+            if key.strip().lower() == "q":
+                return
+
+    await loop.run_in_executor(None, wait_for_quit)
+
+
+async def menu_loop(nc, js, user_id: str):
+    loop = asyncio.get_event_loop()
+    last_subscription = None
+
+    while True:
+        print("\n=== Menu ===")
+        print("  [1] Criar/atualizar subscrição")
+        print("  [2] Ouvir notificações")
+        print("  [3] Sair")
+
+        choice = await loop.run_in_executor(None, lambda: input("Opção: ").strip())
+
+        if choice == "1":
+            last_subscription = await loop.run_in_executor(
+                None, lambda: build_subscription(user_id)
+            )
+            await notification_mode(nc, js, user_id, last_subscription)
+
+        elif choice == "2":
+            if last_subscription is None:
+                print("\nNenhuma subscrição configurada. Crie uma primeiro.")
+            else:
+                await notification_mode(nc, js, user_id, last_subscription)
+
+        elif choice == "3":
+            print("Encerrando...")
+            await nc.close()
+            break
+
+        else:
+            print("Opção inválida.")
+
+
 async def main():
     NATS_URL = os.getenv("NATS_URL", "nats://localhost:4222")
     user_id = str(uuid.uuid4())
@@ -72,26 +120,7 @@ async def main():
     js = nc.jetstream()
 
     await listen_notifications(nc, user_id)
-
-    while True:
-        print("\n=== Menu ===")
-        print("  [1] Criar/atualizar subscrição")
-        print("  [2] Sair")
-        choice = input("Opção: ").strip()
-
-        if choice == "1":
-            subscription = build_subscription(user_id)
-            await js.publish("subscription", json.dumps(subscription).encode())
-            print("\Subscrição publicada:")
-            print(json.dumps(subscription, indent=2))
-
-        elif choice == "2":
-            print("Encerrando...")
-            await nc.close()
-            break
-
-        else:
-            print("Opção inválida.")
+    await menu_loop(nc, js, user_id)
 
 
 asyncio.run(main())

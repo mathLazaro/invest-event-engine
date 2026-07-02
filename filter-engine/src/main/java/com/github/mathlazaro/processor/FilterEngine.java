@@ -1,20 +1,21 @@
 package com.github.mathlazaro.processor;
 
 import com.github.mathlazaro.model.*;
-import lombok.extern.log4j.Log4j2;
 import org.apache.flink.api.common.state.BroadcastState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.UUID;
 
-@Log4j2
 public class FilterEngine extends BroadcastProcessFunction<Investments, Subscriptions, Notification> {
+
+    private static final Logger log = LogManager.getLogger(FilterEngine.class);
 
     @Override
     public void processBroadcastElement(
@@ -64,6 +65,5 @@ public class FilterEngine extends BroadcastProcessFunction<Investments, Subscrip
 
         }
     }
-
 
 }

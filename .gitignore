@@ -13,4 +13,5 @@ nats-data/
 # Docker
 docker-data/
 
+*.pyc
 
